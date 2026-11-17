@@ -1,0 +1,417 @@
+[
+  {
+    "id": "chapman-river-loop",
+    "name": "Chapman River Loop Trail",
+    "location": "Geraldton",
+    "difficulty": "Intermediate",
+    "distance": "9.8 km",
+    "description": "A dual-use loop trail following both sides of the Chapman River. Flowing singletrack, limestone sections, bridges and some technical features suitable for intermediate riders.",
+    "photo": "/assets/trails/chapman-river.jpg",
+    "featured": true,
+    "route": "chapman-river-loop",
+    "trailhead": {
+      "latitude": -28.731,
+      "longitude": 114.629,
+      "label": "Approx. trailhead"
+    }
+  },
+  {
+    "id": "goat-farm-mtb-park",
+    "name": "Goat Farm MTB Park",
+    "location": "Goat Farm",
+    "difficulty": "Advanced",
+    "distance": 3.6,
+    "description": "A compact, technical ride at Goat Farm, with steep lines, rocky features and fast descents.",
+    "latitude": -31.9102,
+    "longitude": 116.0358,
+    "photo": null,
+    "route": null
+  },
+  {
+    "id": "kalamunda-mountain-bike-circuit",
+    "name": "Kalamunda Mountain Bike Circuit",
+    "location": "Kalamunda",
+    "difficulty": "Advanced",
+    "distance": 22,
+    "description": "A longer cross-country circuit through jarrah forest, linking climbs, flowing singletrack and technical descents.",
+    "latitude": -31.9778,
+    "longitude": 116.058,
+    "photo": null,
+    "route": null
+  },
+  {
+    "id": "bam-bam",
+    "name": "Bam-Bam",
+    "location": "Dwellingup",
+    "difficulty": "Difficult",
+    "distance": 1.2,
+    "description": "Bam-Bam mountain bike trail in Dwellingup.",
+    "route": "Bam-Bam"
+  },
+  {
+    "id": "bfg",
+    "name": "BFG",
+    "location": "Dwellingup",
+    "difficulty": "Moderate",
+    "distance": 2.5,
+    "description": "BFG mountain bike trail in Dwellingup.",
+    "route": "BFG"
+  },
+  {
+    "id": "blaze",
+    "name": "Blaze",
+    "location": "Dwellingup",
+    "difficulty": "Blue",
+    "distance": 2.2,
+    "description": "Blaze mountain bike trail in Dwellingup.",
+    "route": "Blaze"
+  },
+  {
+    "id": "blue-marron",
+    "name": "Blue-Marron",
+    "location": "Dwellingup",
+    "difficulty": "Moderate",
+    "distance": 2.4,
+    "description": "Blue-Marron mountain bike trail in Dwellingup.",
+    "route": "Blue-Marron"
+  },
+  {
+    "id": "boom-boom",
+    "name": "Boom-Boom",
+    "location": "Dwellingup",
+    "difficulty": "Moderate",
+    "distance": 1.3,
+    "description": "Boom-Boom mountain bike trail in Dwellingup.",
+    "route": "Boom-Boom"
+  },
+  {
+    "id": "bullish",
+    "name": "Bullish",
+    "location": "Dwellingup",
+    "difficulty": "Easy",
+    "distance": 0.8,
+    "description": "Bullish mountain bike trail in Dwellingup.",
+    "route": "Bullish"
+  },
+  {
+    "id": "busted-nuts",
+    "name": "Busted-Nuts",
+    "location": "Dwellingup",
+    "difficulty": "Difficult",
+    "distance": 1.6,
+    "description": "Busted-Nuts mountain bike trail in Dwellingup.",
+    "route": "Busted-Nuts"
+  },
+  {
+    "id": "captain-hook",
+    "name": "Captain-Hook",
+    "location": "Dwellingup",
+    "difficulty": "Moderate",
+    "distance": 1.3,
+    "description": "Captain-Hook mountain bike trail in Dwellingup.",
+    "route": "Captain-Hook"
+  },
+  {
+    "id": "cloak-and-dagger",
+    "name": "Cloak-and-Dagger-",
+    "location": "Dwellingup",
+    "difficulty": "Moderate",
+    "distance": 4.2,
+    "description": "Cloak-and-Dagger- mountain bike trail in Dwellingup.",
+    "route": "Cloak-and-Dagger-"
+  },
+  {
+    "id": "cuckoo",
+    "name": "Cuckoo",
+    "location": "Dwellingup",
+    "difficulty": "Moderate",
+    "distance": 4.5,
+    "description": "Cuckoo mountain bike trail in Dwellingup.",
+    "route": "Cuckoo"
+  },
+  {
+    "id": "devils-pass",
+    "name": "Devils-Pass",
+    "location": "Dwellingup",
+    "difficulty": "Unrated",
+    "distance": 1.1,
+    "description": "Devils-Pass mountain bike trail in Dwellingup.",
+    "route": "Devils-Pass"
+  },
+  {
+    "id": "electric-blue",
+    "name": "Electric-Blue",
+    "location": "Dwellingup",
+    "difficulty": "Blue",
+    "distance": 0.6,
+    "description": "Electric-Blue mountain bike trail in Dwellingup.",
+    "route": "Electric-Blue"
+  },
+  {
+    "id": "emu-run",
+    "name": "Emu-Run",
+    "location": "Dwellingup",
+    "difficulty": "Easy",
+    "distance": 1.5,
+    "description": "Emu-Run mountain bike trail in Dwellingup.",
+    "route": "Emu-Run"
+  },
+  {
+    "id": "fault-line",
+    "name": "Fault-Line",
+    "location": "Dwellingup",
+    "difficulty": "Moderate",
+    "distance": 2.2,
+    "description": "Fault-Line mountain bike trail in Dwellingup.",
+    "route": "Fault-Line"
+  },
+  {
+    "id": "go-loco",
+    "name": "Go-Loco",
+    "location": "Dwellingup",
+    "difficulty": "Easy",
+    "distance": 8.6,
+    "description": "Go-Loco mountain bike trail in Dwellingup.",
+    "route": "Go-Loco"
+  },
+  {
+    "id": "inzamia",
+    "name": "Inzamia",
+    "location": "Dwellingup",
+    "difficulty": "Moderate",
+    "distance": 2.1,
+    "description": "Inzamia mountain bike trail in Dwellingup.",
+    "route": "Inzamia"
+  },
+  {
+    "id": "karrakatoa",
+    "name": "Karrakatoa",
+    "location": "Dwellingup",
+    "difficulty": "Difficult",
+    "distance": 1.9,
+    "description": "Karrakatoa mountain bike trail in Dwellingup.",
+    "route": "Karrakatoa"
+  },
+  {
+    "id": "laterite",
+    "name": "Laterite",
+    "location": "Dwellingup",
+    "difficulty": "Moderate",
+    "distance": 1,
+    "description": "Laterite mountain bike trail in Dwellingup.",
+    "route": "Laterite"
+  },
+  {
+    "id": "marrinup",
+    "name": "Marrinup",
+    "location": "Dwellingup",
+    "difficulty": "Blue",
+    "distance": 7.1,
+    "description": "Marrinup mountain bike trail in Dwellingup.",
+    "route": "Marrinup"
+  },
+  {
+    "id": "mayhem",
+    "name": "Mayhem",
+    "location": "Dwellingup",
+    "difficulty": "Unrated",
+    "distance": 1.3,
+    "description": "Mayhem mountain bike trail in Dwellingup.",
+    "route": "Mayhem"
+  },
+  {
+    "id": "quokkamoly",
+    "name": "Quokkamoly",
+    "location": "Dwellingup",
+    "difficulty": "Moderate",
+    "distance": 1.1,
+    "description": "Quokkamoly mountain bike trail in Dwellingup.",
+    "route": "Quokkamoly"
+  },
+  {
+    "id": "quollity-street",
+    "name": "Quollity-Street",
+    "location": "Dwellingup",
+    "difficulty": "Easy",
+    "distance": 1.3,
+    "description": "Quollity-Street mountain bike trail in Dwellingup.",
+    "route": "Quollity-Street"
+  },
+  {
+    "id": "ripper",
+    "name": "Ripper",
+    "location": "Dwellingup",
+    "difficulty": "Moderate",
+    "distance": 1.2,
+    "description": "Ripper mountain bike trail in Dwellingup.",
+    "route": "Ripper"
+  },
+  {
+    "id": "rock-on",
+    "name": "Rock-On",
+    "location": "Dwellingup",
+    "difficulty": "Easy",
+    "distance": 1.6,
+    "description": "Rock-On mountain bike trail in Dwellingup.",
+    "route": "Rock-On"
+  },
+  {
+    "id": "shingleback",
+    "name": "Shingleback",
+    "location": "Dwellingup",
+    "difficulty": "Easy",
+    "distance": 2.9,
+    "description": "Shingleback mountain bike trail in Dwellingup.",
+    "route": "Shingleback"
+  },
+  {
+    "id": "skipper",
+    "name": "Skipper",
+    "location": "Dwellingup",
+    "difficulty": "Easy",
+    "distance": 0.2,
+    "description": "Skipper mountain bike trail in Dwellingup.",
+    "route": "Skipper"
+  },
+  {
+    "id": "slingshot",
+    "name": "Slingshot",
+    "location": "Dwellingup",
+    "difficulty": "Unrated",
+    "distance": 1.1,
+    "description": "Slingshot mountain bike trail in Dwellingup.",
+    "route": "Slingshot"
+  },
+  {
+    "id": "snotty-gobble",
+    "name": "Snotty-Gobble",
+    "location": "Dwellingup",
+    "difficulty": "Easy",
+    "distance": 0.9,
+    "description": "Snotty-Gobble mountain bike trail in Dwellingup.",
+    "route": "Snotty-Gobble"
+  },
+  {
+    "id": "solitary",
+    "name": "Solitary",
+    "location": "Dwellingup",
+    "difficulty": "Easy",
+    "distance": 3.2,
+    "description": "Solitary mountain bike trail in Dwellingup.",
+    "route": "Solitary"
+  },
+  {
+    "id": "the-luge",
+    "name": "The-Luge",
+    "location": "Dwellingup",
+    "difficulty": "Unrated",
+    "distance": 1.5,
+    "description": "The-Luge mountain bike trail in Dwellingup.",
+    "route": "The-Luge"
+  },
+  {
+    "id": "the-mack",
+    "name": "The-Mack",
+    "location": "Dwellingup",
+    "difficulty": "Easy",
+    "distance": 3,
+    "description": "The-Mack mountain bike trail in Dwellingup.",
+    "route": "The-Mack"
+  },
+  {
+    "id": "tombstone",
+    "name": "Tombstone",
+    "location": "Dwellingup",
+    "difficulty": "Moderate",
+    "distance": 1.2,
+    "description": "Tombstone mountain bike trail in Dwellingup.",
+    "route": "Tombstone"
+  },
+  {
+    "id": "turner-hill",
+    "name": "Turner-Hill",
+    "location": "Dwellingup",
+    "difficulty": "Moderate",
+    "distance": 12.4,
+    "description": "Turner-Hill mountain bike trail in Dwellingup.",
+    "route": "Turner-Hill"
+  },
+  {
+    "id": "waterous-trail",
+    "name": "Waterous-Trail",
+    "location": "Dwellingup",
+    "difficulty": "Moderate",
+    "distance": 64.1,
+    "description": "Waterous-Trail mountain bike trail in Dwellingup.",
+    "route": "Waterous-Trail"
+  },
+  {
+    "id": "whistler",
+    "name": "Whistler",
+    "location": "Dwellingup",
+    "difficulty": "Moderate",
+    "distance": 1.6,
+    "description": "Whistler mountain bike trail in Dwellingup.",
+    "route": "Whistler"
+  },
+  {
+    "id": "world-away",
+    "name": "World-Away",
+    "location": "Dwellingup",
+    "difficulty": "Easy",
+    "distance": 1.3,
+    "description": "World-Away mountain bike trail in Dwellingup.",
+    "route": "World-Away"
+  },
+  {
+    "id": "yarri-up",
+    "name": "Yarri-Up",
+    "location": "Dwellingup",
+    "difficulty": "Easy",
+    "distance": 1.9,
+    "description": "Yarri-Up mountain bike trail in Dwellingup.",
+    "route": "Yarri-Up"
+  },
+  {
+    "id": "year-one",
+    "name": "Year-One",
+    "location": "Dwellingup",
+    "difficulty": "Easy",
+    "distance": 2.1,
+    "description": "Year-One mountain bike trail in Dwellingup.",
+    "route": "Year-One"
+  },
+  {
+    "id": "jarrahdale-mtb-trail-loop",
+    "name": "Jarrahdale MTB Trail Loop",
+    "location": "Jarrahdale",
+    "difficulty": "Intermediate",
+    "distance": 8,
+    "description": "An example forest loop near Jarrahdale, combining rolling jarrah-country climbs with flowing singletrack descents.",
+    "latitude": -32.338,
+    "longitude": 116.061,
+    "photo": null
+  },
+  {
+    "id": "wambenger-collie-mtb-loop",
+    "name": "Wambenger MTB Loop",
+    "location": "Collie",
+    "difficulty": "Advanced",
+    "distance": 12,
+    "description": "An example ride in Collie's Wambenger trail area, with forest singletrack, technical features and punchy climbs.",
+    "latitude": -33.359,
+    "longitude": 115.989,
+    "photo": null
+  },
+  {
+    "id": "bindoon-forest-mtb-loop",
+    "name": "Bindoon Forest MTB Loop",
+    "location": "Bindoon",
+    "difficulty": "Intermediate",
+    "distance": 15,
+    "description": "An example Chittering Valley ride over rolling bushland terrain, with gravel connectors and flowing off-road sections.",
+    "latitude": -31.388,
+    "longitude": 116.096,
+    "photo": null
+  }
+]
