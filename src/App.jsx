@@ -13,7 +13,17 @@ const MAX_SAVED_RIDES = 20;
 const MAX_RIDE_GPS_ACCURACY_METERS = 15;
 const MIN_RIDE_POINT_DISTANCE_METERS = 5;
 const STATIONARY_SPEED_METERS_PER_SECOND = 0.5;
-const FEATURED_TRAIL_ID = "chapman-river-loop";
+const RIDE_LOCATIONS = [
+  "Geraldton",
+  "Dwellingup",
+  "Bindoon",
+  "Collie",
+  "Margaret River",
+  "Nannup (Tank 7)",
+  "Wellington Dam",
+  "Albany",
+  "Mundaring",
+];
 const trailsByFeatured = [...trails].sort(
   (firstTrail, secondTrail) =>
     Number(Boolean(secondTrail.featured)) -
@@ -25,6 +35,11 @@ const trailsByLocation = trailsByFeatured.reduce((groups, trail) => {
   groups.set(trail.location, locationTrails);
   return groups;
 }, new Map());
+RIDE_LOCATIONS.forEach((location) => {
+  if (!trailsByLocation.has(location)) {
+    trailsByLocation.set(location, []);
+  }
+});
 
 function loadStoredData() {
   try {
@@ -131,7 +146,8 @@ function App() {
   const [headingError, setHeadingError] = useState("");
   const [isLocating, setIsLocating] = useState(false);
   const [currentPage, setCurrentPage] = useState("map");
-  const [selectedTrailId, setSelectedTrailId] = useState(FEATURED_TRAIL_ID);
+  const [selectedTrailId, setSelectedTrailId] = useState(null);
+  const [selectedTrailLocation, setSelectedTrailLocation] = useState(null);
   const [isTrailCardExpanded, setIsTrailCardExpanded] = useState(false);
   const [showCarActions, setShowCarActions] = useState(false);
   const [isRecordingRide, setIsRecordingRide] = useState(false);
@@ -156,6 +172,9 @@ function App() {
       ? getDistanceInMeters(savedCarLocation, coordinates)
       : null;
   const selectedTrail = trails.find((trail) => trail.id === selectedTrailId);
+  const selectedLocationTrails = selectedTrailLocation
+    ? (trailsByLocation.get(selectedTrailLocation) ?? [])
+    : [];
   const selectedTrailLength = selectedTrail
     ? typeof selectedTrail.distance === "string"
       ? selectedTrail.distance
@@ -164,6 +183,7 @@ function App() {
 
   const selectTrail = (trailId) => {
     setSelectedTrailId(trailId);
+    setSelectedTrailLocation(null);
     setIsTrailCardExpanded(false);
   };
 
@@ -189,6 +209,28 @@ function App() {
     const intervalId = setInterval(updateRideDuration, 1000);
     return () => clearInterval(intervalId);
   }, [rideStartedAt]);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return undefined;
+
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        setCoordinates({
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+        });
+        setDeviceHeading(
+          Number.isFinite(coords.heading) ? coords.heading : null,
+        );
+      },
+      (error) => {
+        setLocationError(error.message || "Unable to retrieve your location.");
+      },
+      { enableHighAccuracy: true, maximumAge: 30000 },
+    );
+
+    return undefined;
+  }, []);
 
   useEffect(
     () => () => {
@@ -595,14 +637,27 @@ function App() {
               <span className="eyebrow">FIND YOUR NEXT RIDE</span>
               <h1 id="trails-title">Trails</h1>
             </div>
-            <span className="trail-count">{trails.length} trails</span>
+            <span className="trail-count">
+              {selectedTrailLocation
+                ? `${selectedLocationTrails.length} trails`
+                : `${trailsByLocation.size} locations`}
+            </span>
           </div>
-          <div className="trail-groups">
-            {[...trailsByLocation].map(([location, locationTrails]) => (
-              <section className="trail-group" key={location}>
-                <h2 className="trail-group-heading">{location}</h2>
+          {selectedTrailLocation ? (
+            <>
+              <button
+                className="trails-back-button"
+                type="button"
+                onClick={() => setSelectedTrailLocation(null)}>
+                <span aria-hidden="true">←</span>
+                All locations
+              </button>
+              <h2 className="trail-location-heading">
+                {selectedTrailLocation}
+              </h2>
+              {selectedLocationTrails.length > 0 ? (
                 <ul className="trail-list">
-                  {locationTrails.map((trail) => (
+                  {selectedLocationTrails.map((trail) => (
                     <li key={trail.id}>
                       <button
                         className={`trail-list-item${trail.id === selectedTrailId ? " is-selected" : ""}`}
@@ -622,9 +677,35 @@ function App() {
                     </li>
                   ))}
                 </ul>
-              </section>
-            ))}
-          </div>
+              ) : (
+                <p className="empty-location-message">Trails coming soon</p>
+              )}
+            </>
+          ) : (
+            <ul className="trail-location-list">
+              {[...trailsByLocation]
+                .sort(([firstLocation], [secondLocation]) =>
+                  firstLocation.localeCompare(secondLocation),
+                )
+                .map(([location, locationTrails]) => (
+                  <li key={location}>
+                    <button
+                      className="trail-location-item"
+                      type="button"
+                      onClick={() => setSelectedTrailLocation(location)}>
+                      <span>{location}</span>
+                      <span className="trail-location-item-count">
+                        {locationTrails.length}{" "}
+                        {locationTrails.length === 1 ? "trail" : "trails"}
+                      </span>
+                      <span className="trail-list-arrow" aria-hidden="true">
+                        ›
+                      </span>
+                    </button>
+                  </li>
+                ))}
+            </ul>
+          )}
         </section>
       )}
 
@@ -690,6 +771,9 @@ function App() {
               onClick={() => {
                 setCurrentPage(item.id);
                 setShowCarActions(false);
+                if (item.id === "trails") {
+                  setSelectedTrailLocation(null);
+                }
               }}>
               <span className="nav-icon" aria-hidden="true">{item.icon}</span>
               <span>{item.label}</span>

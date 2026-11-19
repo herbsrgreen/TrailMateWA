@@ -380,6 +380,7 @@ function Map({
         layout: {
           "line-cap": "round",
           "line-join": "round",
+          visibility: selectedTrailIdRef.current ? "visible" : "none",
         },
         paint: {
           "line-color": getDifficultyColorExpression(),
@@ -422,6 +423,7 @@ function Map({
           id,
           onTrailSelectRef,
         );
+        element.style.display = selectedTrailIdRef.current ? "" : "none";
         setTrailheadMarkerSize(
           element,
           id === selectedTrailIdRef.current,
@@ -448,6 +450,7 @@ function Map({
           "text-offset": [0, 1.2],
           "text-allow-overlap": true,
           "text-ignore-placement": true,
+          visibility: selectedTrailIdRef.current ? "visible" : "none",
         },
         paint: {
           "text-color": "#183b2c",
@@ -473,6 +476,9 @@ function Map({
         id: CAR_DISTANCE_LAYER_ID,
         type: "line",
         source: CAR_DISTANCE_SOURCE_ID,
+        layout: {
+          visibility: selectedTrailIdRef.current ? "visible" : "none",
+        },
         paint: {
           "line-color": "#168bff",
           "line-width": 4,
@@ -489,6 +495,9 @@ function Map({
         mapInstance.jumpTo({ center: [longitude, latitude], zoom: 17 });
       } else if (selectedTrailIdRef.current) {
         fitToTrail(mapInstance, selectedTrailIdRef.current);
+      } else if (locations.current.coordinates) {
+        const { latitude, longitude } = locations.current.coordinates;
+        mapInstance.flyTo({ center: [longitude, latitude], zoom: 14 });
       }
     });
     map.current = mapInstance;
@@ -522,7 +531,26 @@ function Map({
       "line-color",
       getDifficultyColorExpression(),
     );
+    const trailVisibility = selectedTrailId ? "visible" : "none";
+    mapInstance.setLayoutProperty(
+      MTB_TRAILS_LAYER_ID,
+      "visibility",
+      trailVisibility,
+    );
+    mapInstance.setLayoutProperty(
+      MTB_TRAIL_LABELS_LAYER_ID,
+      "visibility",
+      trailVisibility,
+    );
+    if (mapInstance.getLayer(CAR_DISTANCE_LAYER_ID)) {
+      mapInstance.setLayoutProperty(
+        CAR_DISTANCE_LAYER_ID,
+        "visibility",
+        trailVisibility,
+      );
+    }
     trailheadMarkers.current.forEach(([trailId, { element }]) => {
+      element.style.display = selectedTrailId ? "" : "none";
       setTrailheadMarkerSize(element, trailId === selectedTrailId);
     });
     if (mapInstance.getLayer(MTB_TRAIL_LABELS_LAYER_ID)) {
@@ -605,7 +633,7 @@ function Map({
       currentLocationArrow.current = null;
     }
 
-    if (!savedCarLocation) {
+    if (!savedCarLocation || !selectedTrailId) {
       carLocationMarker.current?.remove();
       carLocationMarker.current = null;
       return;

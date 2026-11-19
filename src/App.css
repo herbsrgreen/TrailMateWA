@@ -28,6 +28,10 @@
   height: 100%;
 }
 
+.map-shell {
+  z-index: 0;
+}
+
 .map-container {
   background: #dce5dc;
 }
@@ -163,6 +167,8 @@
 .trail-card-grip:focus-visible,
 .trail-card-button:focus-visible,
 .floating-ride-button:focus-visible,
+.trails-back-button:focus-visible,
+.trail-location-item:focus-visible,
 .trail-list-item:focus-visible,
 .car-action-popover button:focus-visible {
   outline: 3px solid #8a9e3f;
@@ -572,23 +578,85 @@
   white-space: nowrap;
 }
 
-.trail-groups {
-  display: grid;
-  gap: 20px;
-}
-
-.trail-group-heading {
-  margin-bottom: 10px;
-  color: var(--forest);
-  font-size: 16px;
-}
-
 .trail-list {
   display: grid;
   gap: 9px;
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.trail-location-list {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trail-location-item {
+  display: flex;
+  width: 100%;
+  min-height: 62px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: #ffffff;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.trail-location-item > span:first-child {
+  flex: 1;
+  color: #26372d;
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.trail-location-item-count {
+  color: #7e8981;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.trails-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 12px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--forest);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.trails-back-button > span {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.trail-location-heading {
+  margin: 0 0 14px;
+  color: var(--forest);
+  font-size: 18px;
+}
+
+.empty-location-message {
+  margin: 0;
+  padding: 22px 16px;
+  border: 1px dashed #cfd8cb;
+  border-radius: 15px;
+  color: #79837d;
+  font-size: 13px;
+  text-align: center;
 }
 
 .trail-list-item {
