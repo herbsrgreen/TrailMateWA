@@ -9,6 +9,28 @@
   height: 100%;
 }
 
+.user-location-marker {
+  z-index: 20;
+}
+
+.current-location-dot {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  background: #168bff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 55%);
+}
+
+.user-location-arrow {
+  position: absolute;
+  inset: 0;
+}
+
 .car-map-marker {
   font-size: 28px;
   line-height: 1;

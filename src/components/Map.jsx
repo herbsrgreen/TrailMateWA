@@ -118,51 +118,23 @@ function updateRideBreadcrumbs(map, points) {
   source.setData(getRideBreadcrumbsGeoJson(points));
 }
 
-function getBearingInDegrees(firstPoint, secondPoint) {
-  const toRadians = (degrees) => (degrees * Math.PI) / 180;
-  const firstLatitude = toRadians(firstPoint.latitude);
-  const secondLatitude = toRadians(secondPoint.latitude);
-  const longitudeDifference = toRadians(
-    secondPoint.longitude - firstPoint.longitude,
-  );
-  const y = Math.sin(longitudeDifference) * Math.cos(secondLatitude);
-  const x =
-    Math.cos(firstLatitude) * Math.sin(secondLatitude) -
-    Math.sin(firstLatitude) *
-      Math.cos(secondLatitude) *
-      Math.cos(longitudeDifference);
-
-  if (x === 0 && y === 0) return null;
-
-  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
-}
-
-function getBreadcrumbHeading(ridePoints) {
-  for (let index = ridePoints.length - 1; index > 0; index -= 1) {
-    const heading = getBearingInDegrees(
-      ridePoints[index - 1],
-      ridePoints[index],
-    );
-    if (heading !== null) return heading;
-  }
-
-  return null;
-}
-
 function createCurrentLocationArrowElement() {
   const element = document.createElement("div");
+  element.className = "user-location-marker";
   element.style.width = "36px";
   element.style.height = "36px";
   element.style.pointerEvents = "none";
   element.setAttribute("role", "img");
-  element.setAttribute("aria-label", "Current GPS location and direction");
+  element.setAttribute("aria-label", "Current GPS location");
 
   const arrow = document.createElementNS(SVG_NAMESPACE, "svg");
+  arrow.classList.add("user-location-arrow");
   arrow.setAttribute("viewBox", "0 0 40 40");
   arrow.setAttribute("width", "36");
   arrow.setAttribute("height", "36");
   arrow.style.transformOrigin = "center";
   arrow.style.filter = "drop-shadow(0 1px 2px rgb(0 0 0 / 50%))";
+  arrow.style.display = "none";
 
   const path = document.createElementNS(SVG_NAMESPACE, "path");
   path.setAttribute("d", CURRENT_LOCATION_ARROW_PATH);
@@ -172,9 +144,12 @@ function createCurrentLocationArrowElement() {
   path.setAttribute("stroke-linejoin", "round");
 
   arrow.append(path);
-  element.append(arrow);
+  const dot = document.createElement("span");
+  dot.className = "current-location-dot";
+  dot.setAttribute("aria-hidden", "true");
+  element.append(dot, arrow);
 
-  return { element, arrow };
+  return { element, arrow, dot };
 }
 
 function fitToTrail(map, trailId) {
@@ -330,19 +305,26 @@ function setTrailheadMarkerSize(element, selected) {
 function Map({
   coordinates,
   savedCarLocation,
+  isRecordingRide,
   selectedTrailId,
   onTrailSelect,
   ridePoints,
   deviceHeading,
+  compassHeading,
 }) {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const currentLocationMarker = useRef(null);
   const currentLocationArrow = useRef(null);
   const carLocationMarker = useRef(null);
+  const wasRecordingRide = useRef(false);
   const trailheadMarkers = useRef([]);
   const ridePointsRef = useRef(ridePoints);
-  const locations = useRef({ coordinates, savedCarLocation });
+  const locations = useRef({
+    coordinates,
+    savedCarLocation,
+    isRecordingRide,
+  });
   const onTrailSelectRef = useRef(onTrailSelect);
   const selectedTrailIdRef = useRef(selectedTrailId);
   const [mapError, setMapError] = useState("");
@@ -502,7 +484,10 @@ function Map({
         locations.current.coordinates,
         locations.current.savedCarLocation,
       );
-      if (selectedTrailIdRef.current) {
+      if (locations.current.isRecordingRide && locations.current.coordinates) {
+        const { latitude, longitude } = locations.current.coordinates;
+        mapInstance.jumpTo({ center: [longitude, latitude], zoom: 17 });
+      } else if (selectedTrailIdRef.current) {
         fitToTrail(mapInstance, selectedTrailIdRef.current);
       }
     });
@@ -558,30 +543,63 @@ function Map({
 
     if (coordinates) {
       const currentPosition = [coordinates.longitude, coordinates.latitude];
-      if (!selectedTrailId) {
+      if (isRecordingRide) {
+        mapInstance.setCenter(currentPosition);
+        if (!wasRecordingRide.current) {
+          mapInstance.setZoom(17);
+        }
+        wasRecordingRide.current = true;
+      } else {
+        wasRecordingRide.current = false;
+      }
+
+      if (!isRecordingRide && !selectedTrailId) {
         mapInstance.flyTo({ center: currentPosition, zoom: 14 });
       }
 
       if (currentLocationMarker.current) {
         currentLocationMarker.current.setLngLat(currentPosition);
       } else {
-        const { element, arrow } = createCurrentLocationArrowElement();
+        const { element, arrow, dot } = createCurrentLocationArrowElement();
         currentLocationMarker.current = new Marker({
           element,
           anchor: "center",
         })
           .setLngLat(currentPosition)
           .addTo(mapInstance);
-        currentLocationArrow.current = arrow;
+        currentLocationArrow.current = { arrow, dot, element };
       }
 
       if (currentLocationArrow.current) {
         const heading = Number.isFinite(deviceHeading)
           ? deviceHeading
-          : getBreadcrumbHeading(ridePoints);
-        currentLocationArrow.current.style.transform = `rotate(${heading ?? 0}deg)`;
+          : compassHeading;
+        const { arrow, dot, element } = currentLocationArrow.current;
+        const hasHeading = Number.isFinite(heading);
+        console.info("[TrailMate] Applying location marker heading", {
+          latitude: coordinates.latitude,
+          longitude: coordinates.longitude,
+          gpsHeading: deviceHeading,
+          compassHeading,
+          appliedHeading: hasHeading ? heading : null,
+          arrowVisible: hasHeading,
+        });
+        arrow.style.display = hasHeading ? "block" : "none";
+        dot.style.display = hasHeading ? "none" : "block";
+        if (hasHeading) {
+          arrow.style.transform = `rotate(${heading}deg)`;
+          element.setAttribute(
+            "aria-label",
+            "Current GPS location and direction",
+          );
+        } else {
+          element.setAttribute("aria-label", "Current GPS location");
+        }
       }
     } else {
+      if (!isRecordingRide) {
+        wasRecordingRide.current = false;
+      }
       currentLocationMarker.current?.remove();
       currentLocationMarker.current = null;
       currentLocationArrow.current = null;
@@ -612,18 +630,19 @@ function Map({
     }
   }, [
     coordinates,
+    compassHeading,
     deviceHeading,
-    ridePoints,
+    isRecordingRide,
     savedCarLocation,
     selectedTrailId,
   ]);
 
   useEffect(() => {
-    locations.current = { coordinates, savedCarLocation };
+    locations.current = { coordinates, savedCarLocation, isRecordingRide };
     if (map.current) {
       updateConnectionLine(map.current, coordinates, savedCarLocation);
     }
-  }, [coordinates, savedCarLocation]);
+  }, [coordinates, isRecordingRide, savedCarLocation]);
 
   return (
     <div className="map-shell">

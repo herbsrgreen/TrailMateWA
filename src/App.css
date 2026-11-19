@@ -162,6 +162,7 @@
 .nav-item:focus-visible,
 .trail-card-grip:focus-visible,
 .trail-card-button:focus-visible,
+.floating-ride-button:focus-visible,
 .trail-list-item:focus-visible,
 .car-action-popover button:focus-visible {
   outline: 3px solid #8a9e3f;
@@ -815,6 +816,35 @@
   font-size: 22px;
   font-weight: 600;
   line-height: 1;
+}
+
+.floating-ride-button {
+  position: absolute;
+  z-index: 6;
+  right: 16px;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: 1px solid rgb(255 255 255 / 85%);
+  border-radius: 99px;
+  background: var(--forest);
+  color: #ffffff;
+  box-shadow: 0 5px 22px rgb(20 37 29 / 24%);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.floating-ride-button > span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff755d;
+  box-shadow: 0 0 0 3px rgb(255 117 93 / 20%);
 }
 
 @media (min-width: 700px) {

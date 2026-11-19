@@ -10,6 +10,9 @@ const TrailMap = lazy(() => import("./components/Map"));
 const CAR_LOCATION_STORAGE_KEY = "trailmatewa-car-location";
 const RIDE_HISTORY_STORAGE_KEY = "trailmatewa-ride-history";
 const MAX_SAVED_RIDES = 20;
+const MAX_RIDE_GPS_ACCURACY_METERS = 15;
+const MIN_RIDE_POINT_DISTANCE_METERS = 5;
+const STATIONARY_SPEED_METERS_PER_SECOND = 0.5;
 const FEATURED_TRAIL_ID = "chapman-river-loop";
 const trailsByFeatured = [...trails].sort(
   (firstTrail, secondTrail) =>
@@ -90,6 +93,18 @@ function getDistanceInMeters(firstLocation, secondLocation) {
   );
 }
 
+function getDeviceCompassHeading(event) {
+  if (Number.isFinite(event.webkitCompassHeading)) {
+    return (event.webkitCompassHeading + 360) % 360;
+  }
+
+  if (event.absolute && Number.isFinite(event.alpha)) {
+    return (360 - event.alpha + 360) % 360;
+  }
+
+  return null;
+}
+
 function formatTrailLength(lengthInMeters) {
   return lengthInMeters >= 1000
     ? `${(lengthInMeters / 1000).toFixed(1)} km`
@@ -104,6 +119,8 @@ function App() {
   const [initialStoredData] = useState(loadStoredData);
   const [coordinates, setCoordinates] = useState(null);
   const [deviceHeading, setDeviceHeading] = useState(null);
+  const [compassHeading, setCompassHeading] = useState(null);
+  const [isDeviceHeadingEnabled, setIsDeviceHeadingEnabled] = useState(false);
   const [savedCarLocation, setSavedCarLocation] = useState(
     initialStoredData.savedCarLocation,
   );
@@ -111,6 +128,7 @@ function App() {
   const [storageError, setStorageError] = useState(initialStoredData.error);
   const [showSavedCarLocation, setShowSavedCarLocation] = useState(false);
   const [locationError, setLocationError] = useState("");
+  const [headingError, setHeadingError] = useState("");
   const [isLocating, setIsLocating] = useState(false);
   const [currentPage, setCurrentPage] = useState("map");
   const [selectedTrailId, setSelectedTrailId] = useState(FEATURED_TRAIL_ID);
@@ -130,6 +148,7 @@ function App() {
   const [ridePoints, setRidePoints] = useState([]);
   const watchId = useRef(null);
   const previousRideCoordinates = useRef(null);
+  const ridePointCount = useRef(0);
   const rideStartedAtRef = useRef(null);
   const rideDistanceMetersRef = useRef(0);
   const distanceFromCar =
@@ -180,6 +199,59 @@ function App() {
     [],
   );
 
+  useEffect(() => {
+    if (!isDeviceHeadingEnabled) return undefined;
+
+    const updateCompassHeading = (event) => {
+      const heading = getDeviceCompassHeading(event);
+      if (heading !== null) setCompassHeading(heading);
+    };
+
+    window.addEventListener("deviceorientation", updateCompassHeading);
+    window.addEventListener(
+      "deviceorientationabsolute",
+      updateCompassHeading,
+    );
+
+    return () => {
+      window.removeEventListener("deviceorientation", updateCompassHeading);
+      window.removeEventListener(
+        "deviceorientationabsolute",
+        updateCompassHeading,
+      );
+    };
+  }, [isDeviceHeadingEnabled]);
+
+  const enableDeviceHeading = () => {
+    const orientationApi = window.DeviceOrientationEvent;
+    if (!orientationApi) return;
+
+    setHeadingError("");
+    if (typeof orientationApi.requestPermission !== "function") {
+      setIsDeviceHeadingEnabled(true);
+      return;
+    }
+
+    orientationApi
+      .requestPermission()
+      .then((permission) => {
+        if (permission === "granted") {
+          setIsDeviceHeadingEnabled(true);
+        } else {
+          setHeadingError(
+            "Device heading permission was denied. Using GPS direction when available.",
+          );
+        }
+      })
+      .catch((error) => {
+        setHeadingError(
+          `Unable to access device heading: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      });
+  };
+
   const stopRide = () => {
     if (rideStartedAtRef.current !== null) {
       const durationSeconds = Math.floor(
@@ -210,6 +282,7 @@ function App() {
     previousRideCoordinates.current = null;
     setRideStartedAt(null);
     setIsRecordingRide(false);
+    setCurrentPage("ride");
   };
 
   const startRide = () => {
@@ -218,31 +291,69 @@ function App() {
       return;
     }
 
+    enableDeviceHeading();
     setLocationError("");
     setRideDistanceMeters(0);
     rideDistanceMetersRef.current = 0;
     setRideDurationSeconds(0);
     setHasCompletedRide(false);
     setRidePoints([]);
+    ridePointCount.current = 0;
     previousRideCoordinates.current = null;
     setDeviceHeading(null);
+    setCompassHeading(null);
     rideStartedAtRef.current = Date.now();
     setRideStartedAt(rideStartedAtRef.current);
     setIsRecordingRide(true);
+    setCurrentPage("map");
+    setIsTrailCardExpanded(false);
+    setShowCarActions(false);
 
-    watchId.current = navigator.geolocation.watchPosition(
-      ({ coords }) => {
-        if (rideStartedAtRef.current === null) return;
+    const watchOptions = { enableHighAccuracy: true };
+    const rideWatchId = navigator.geolocation.watchPosition(
+      ({ coords, timestamp }) => {
+        if (rideStartedAtRef.current === null) {
+          console.info("[TrailMate] Ignoring GPS update outside active ride");
+          return;
+        }
 
         const newCoordinates = {
           latitude: coords.latitude,
           longitude: coords.longitude,
         };
+        console.info("[TrailMate] Ride GPS update", {
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          accuracy: coords.accuracy,
+          heading: coords.heading,
+          speed: coords.speed,
+          timestamp,
+        });
         setCoordinates(newCoordinates);
         setDeviceHeading(
           Number.isFinite(coords.heading) ? coords.heading : null,
         );
-        setRidePoints((points) => [...points, newCoordinates]);
+
+        const rejectionReasons = [];
+        if (!Number.isFinite(coords.accuracy)) {
+          rejectionReasons.push("accuracy unavailable");
+        } else if (coords.accuracy > MAX_RIDE_GPS_ACCURACY_METERS) {
+          rejectionReasons.push("accuracy over 15 metres");
+        }
+        if (
+          Number.isFinite(coords.speed) &&
+          coords.speed <= STATIONARY_SPEED_METERS_PER_SECOND
+        ) {
+          rejectionReasons.push("stationary or very slow GPS speed");
+        }
+        if (rejectionReasons.length > 0) {
+          console.info("[TrailMate] GPS update not recorded", {
+            rejectionReasons,
+            accuracy: coords.accuracy,
+            speed: coords.speed,
+          });
+          return;
+        }
 
         const previousCoordinates = previousRideCoordinates.current;
         if (previousCoordinates) {
@@ -250,18 +361,46 @@ function App() {
             previousCoordinates,
             newCoordinates,
           );
+          if (segmentDistance < MIN_RIDE_POINT_DISTANCE_METERS) {
+            console.info("[TrailMate] GPS update below movement threshold", {
+              segmentDistanceMeters: segmentDistance,
+              minimumMeters: MIN_RIDE_POINT_DISTANCE_METERS,
+            });
+            return;
+          }
+
           rideDistanceMetersRef.current += segmentDistance;
           setRideDistanceMeters(rideDistanceMetersRef.current);
+          console.info("[TrailMate] Ride distance updated", {
+            segmentDistanceMeters: segmentDistance,
+            totalDistanceMeters: rideDistanceMetersRef.current,
+          });
         }
 
         previousRideCoordinates.current = newCoordinates;
+        ridePointCount.current += 1;
+        setRidePoints((points) => [...points, newCoordinates]);
+        console.info("[TrailMate] Breadcrumb point appended", {
+          latitude: newCoordinates.latitude,
+          longitude: newCoordinates.longitude,
+          acceptedPointCount: ridePointCount.current,
+        });
       },
       (error) => {
+        console.error("[TrailMate] Ride GPS watch error", {
+          code: error.code,
+          message: error.message,
+        });
         setLocationError(error.message || "Unable to retrieve your location.");
         stopRide();
       },
-      { enableHighAccuracy: true },
+      watchOptions,
     );
+    watchId.current = rideWatchId;
+    console.info("[TrailMate] Ride GPS watch started", {
+      watchId: rideWatchId,
+      options: watchOptions,
+    });
   };
 
   const saveCarLocation = () => {
@@ -280,10 +419,12 @@ function App() {
       return;
     }
 
+    enableDeviceHeading();
     setIsLocating(true);
     setLocationError("");
     setCoordinates(null);
     setDeviceHeading(null);
+    setCompassHeading(null);
 
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
@@ -316,10 +457,12 @@ function App() {
         <TrailMap
           coordinates={coordinates}
           savedCarLocation={savedCarLocation}
+          isRecordingRide={isRecordingRide}
           selectedTrailId={selectedTrailId}
           onTrailSelect={selectTrail}
           ridePoints={ridePoints}
           deviceHeading={deviceHeading}
+          compassHeading={compassHeading}
         />
       </Suspense>
 
@@ -372,14 +515,15 @@ function App() {
         </div>
       </div>
 
-      {(locationError || storageError) && (
+      {(locationError || storageError || headingError) && (
         <div className="app-alerts" aria-live="polite">
           {locationError && <p role="alert">{locationError}</p>}
           {storageError && <p role="alert">{storageError}</p>}
+          {headingError && <p role="status">{headingError}</p>}
         </div>
       )}
 
-      {currentPage === "map" && selectedTrail && (
+      {currentPage === "map" && selectedTrail && !isRecordingRide && (
         <section
           className={`trail-card${isTrailCardExpanded ? " is-expanded" : ""}`}
           aria-labelledby="selected-trail-name"
@@ -437,14 +581,9 @@ function App() {
           <button
             className="trail-card-button"
             type="button"
-            onClick={() => {
-              if (!isRecordingRide) startRide();
-              setCurrentPage("ride");
-              selectTrail(null);
-              setShowCarActions(false);
-            }}>
+            onClick={startRide}>
             <span aria-hidden="true">↗</span>
-            {isRecordingRide ? "VIEW CURRENT RIDE" : "START RIDE"}
+            START RIDE
           </button>
         </section>
       )}
@@ -529,22 +668,35 @@ function App() {
         </section>
       )}
 
-      <nav className="bottom-nav" aria-label="Main navigation">
-        {navigationItems.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className={`nav-item${currentPage === item.id ? " is-active" : ""}`}
-            aria-current={currentPage === item.id ? "page" : undefined}
-            onClick={() => {
-              setCurrentPage(item.id);
-              setShowCarActions(false);
-            }}>
-            <span className="nav-icon" aria-hidden="true">{item.icon}</span>
-            <span>{item.label}</span>
-          </button>
-        ))}
-      </nav>
+      {isRecordingRide && currentPage === "map" && (
+        <button
+          className="floating-ride-button"
+          type="button"
+          onClick={() => setCurrentPage("ride")}
+          aria-label="View ride statistics and controls">
+          <span aria-hidden="true" />
+          Ride
+        </button>
+      )}
+
+      {!(isRecordingRide && currentPage === "map") && (
+        <nav className="bottom-nav" aria-label="Main navigation">
+          {navigationItems.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={`nav-item${currentPage === item.id ? " is-active" : ""}`}
+              aria-current={currentPage === item.id ? "page" : undefined}
+              onClick={() => {
+                setCurrentPage(item.id);
+                setShowCarActions(false);
+              }}>
+              <span className="nav-icon" aria-hidden="true">{item.icon}</span>
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </nav>
+      )}
     </main>
   );
 }
